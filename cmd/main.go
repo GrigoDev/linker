@@ -3,15 +3,17 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/GrigoDev/linker/configs"
+	"github.com/GrigoDev/linker/internal/auth"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("Hello")
-}
-
 func main() {
+	conf := configs.LoadConfig()
 	router := http.NewServeMux()
-	NewHelloHandler(router)
+	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
+		Config: conf,
+	})
 
 	server := http.Server{
 		Addr:    ":8081",
