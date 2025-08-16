@@ -6,10 +6,12 @@ import (
 
 	"github.com/GrigoDev/linker/configs"
 	"github.com/GrigoDev/linker/internal/auth"
+	"github.com/GrigoDev/linker/pkg/db"
 )
 
 func main() {
 	conf := configs.LoadConfig()
+	_ = db.NewDb(conf)
 	router := http.NewServeMux()
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: conf,
