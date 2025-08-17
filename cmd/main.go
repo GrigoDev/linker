@@ -8,6 +8,7 @@ import (
 	"github.com/GrigoDev/linker/internal/auth"
 	"github.com/GrigoDev/linker/internal/link"
 	"github.com/GrigoDev/linker/pkg/db"
+	"github.com/GrigoDev/linker/pkg/middleware"
 )
 
 func main() {
@@ -28,7 +29,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    ":8081",
-		Handler: router,
+		Handler: middleware.Logging(router),
 	}
 
 	fmt.Println("Server is listening on port 8081")
