@@ -3,9 +3,11 @@ package link
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/GrigoDev/linker/pkg/req"
 	"github.com/GrigoDev/linker/pkg/res"
+	"gorm.io/gorm"
 )
 
 type LinkHandlerDeps struct {
@@ -53,7 +55,26 @@ func (handler *LinkHandler) Create() http.HandlerFunc {
 
 func (handler *LinkHandler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		body, err := req.HandleBody[LinkUpdateRequest](&w, r)
+		if err != nil {
+			return
+		}
+		idString := r.PathValue("id")
+		id, err := strconv.ParseUint(idString, 10, 32)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		link, err := handler.LinkRepository.Update(&Link{
+			Model: gorm.Model{ID: uint(id)},
+			Url:   body.Url,
+			Hash:  body.Hash,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		res.Json(w, link, 201)
 	}
 }
 
