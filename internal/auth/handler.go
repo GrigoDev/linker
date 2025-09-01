@@ -1,10 +1,10 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/GrigoDev/linker/configs"
+	"github.com/GrigoDev/linker/pkg/jwt"
 	"github.com/GrigoDev/linker/pkg/req"
 	"github.com/GrigoDev/linker/pkg/res"
 )
@@ -37,10 +37,19 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 		}
 
 		email, err := handler.AuthService.Login(body.Email, body.Password)
-		fmt.Println(email, err)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNonAuthoritativeInfo)
+			return
+		}
+
+		token, err := jwt.NewJWT(handler.Config.Auth.Secret).Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		data := LoginResponse{
-			Token: "123",
+			Token: token,
 		}
 		res.Json(w, data, 200)
 	}
@@ -52,6 +61,22 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 		if err != nil {
 			return
 		}
-		handler.AuthService.Register(body.Email, body.Password, body.Name)
+
+		email, err := handler.AuthService.Register(body.Email, body.Password, body.Name)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNonAuthoritativeInfo)
+			return
+		}
+
+		token, err := jwt.NewJWT(handler.Config.Auth.Secret).Create(email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		data := RegisterResponse{
+			Token: token,
+		}
+		res.Json(w, data, 200)
 	}
 }
