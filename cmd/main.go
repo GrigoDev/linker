@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/GrigoDev/linker/configs"
 	"github.com/GrigoDev/linker/internal/auth"
@@ -13,6 +15,25 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 4*time.Second)
+	defer cancel()
+
+	done := make(chan struct{})
+	go func() {
+		time.Sleep(3 * time.Second)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		fmt.Println("Done task")
+	case <-ctxWithTimeout.Done():
+		fmt.Println("Timeout")
+	}
+}
+
+func main2() {
 	conf := configs.LoadConfig()
 	db := db.NewDb(conf)
 	router := http.NewServeMux()
