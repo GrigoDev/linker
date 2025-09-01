@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/GrigoDev/linker/configs"
 	"github.com/GrigoDev/linker/internal/auth"
@@ -15,22 +14,17 @@ import (
 )
 
 func main() {
+	type key int
+	const EmailKey key = 0
 	ctx := context.Background()
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 4*time.Second)
-	defer cancel()
+	ctxWithValue := context.WithValue(ctx, EmailKey, "a@a.ru")
 
-	done := make(chan struct{})
-	go func() {
-		time.Sleep(3 * time.Second)
-		close(done)
-	}()
-
-	select {
-	case <-done:
-		fmt.Println("Done task")
-	case <-ctxWithTimeout.Done():
-		fmt.Println("Timeout")
+	if userEmail, ok := ctxWithValue.Value(EmailKey).(string); ok {
+		fmt.Println(userEmail)
+	} else {
+		fmt.Println("No value")
 	}
+
 }
 
 func main2() {
